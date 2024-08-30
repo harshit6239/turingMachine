@@ -26,11 +26,41 @@ h1 {
     margin-bottom: 1em;
     text-align: center;
 }
-#tape {
-    margin-bottom: 3rem;
+#name {
+    height: 1.5rem;
+    width: 100%;
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
 }
-#input {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#tape {
+    margin-bottom: 1rem;
+}
+#currentState {
+    height: 1rem;
+    margin-bottom: 2rem;
+}
+#textarea {
+    min-height: 400px;
+    min-width: 300px;
+    width: 50%;
+    padding: 1rem;
+    font-size: 1.2rem;
+}
+#textarea:focus {
+    outline: none;
+}
+#run {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+#error {
+    color: red;
+    font-size: 1.2rem;
+    margin-top: 1rem;
 }
