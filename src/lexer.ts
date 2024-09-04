@@ -1,33 +1,12 @@
 import Toastify from "toastify-js";
 import "toastify-js/src/toastify.css";
-
-export enum tokenType {
-    NAME,
-    INITIALSTATE,
-    TRANSITIONFUNCTION,
-    TAPE,
-}
-
-interface from {
-    currentState: string;
-    currentSymbol: string;
-}
-
-interface to {
-    nextState: string;
-    updateSymbol: string;
-    direction: "L" | "R";
-}
-
-export interface transitionFunction {
-    from: from;
-    to: to;
-}
-
-interface token {
-    type: tokenType;
-    value: string | transitionFunction[];
-}
+import {
+    tokenType,
+    from,
+    to,
+    token,
+    transitionFunction,
+} from "./interfaces_enums";
 
 function compareObjects(
     obj1: { [key: string]: any },
@@ -77,22 +56,27 @@ function updateTo(
     return false;
 }
 
-export function tokenize(input: string): token[] {
+function tokenize(input: string): token[] {
     const tokens: token[] = [];
     const lines = input.split("\n");
     let isTransitionFunction = false;
     let transitionFunctions: transitionFunction[] = [];
     for (let lineNo in lines) {
         const line = lines[lineNo].trim();
+        if (line === "") continue;
         if (countChar(line, ":") > 1) {
             throw new Error("Error in line " + lineNo + ": Invalid Syntax");
+        }
+        if (countChar(line, ":") < 1) {
+            if (!isTransitionFunction)
+                throw new Error("Error in line " + lineNo + ": Invalid Syntax");
         }
         const [key, value] = line.split(":");
         if (isTransitionFunction) {
             if (line === "}") {
                 isTransitionFunction = false;
                 tokens.push({
-                    type: tokenType.TRANSITIONFUNCTION,
+                    type: tokenType.TRANSITIONFUNCTIONS,
                     value: transitionFunctions,
                 });
                 continue;
@@ -147,7 +131,7 @@ export function tokenize(input: string): token[] {
                     value: value.trim(),
                 });
             } else if (
-                key.trim() === "transitionFunction" &&
+                key.trim() === "transitionFunctions" &&
                 value.trim() === "{"
             ) {
                 isTransitionFunction = true;
@@ -156,8 +140,25 @@ export function tokenize(input: string): token[] {
                 if (value.trim() === "") {
                     throw new Error("Tape not defined");
                 }
+                if (countChar(value.trim(), " ") != 0) {
+                    throw new Error("Invalid Tape");
+                }
                 tokens.push({
                     type: tokenType.TAPE,
+                    value: value.trim(),
+                });
+            } else if (key.trim() === "acceptingState") {
+                if (value.trim() === "") {
+                    throw new Error("Accepting States not defined");
+                }
+                if (value.trim().length === 0) {
+                    throw new Error("Accepting States not defined");
+                }
+                if (value.trim() == "*") {
+                    throw new Error("Accepting States cannot be *");
+                }
+                tokens.push({
+                    type: tokenType.ACCEPTINGSTATE,
                     value: value.trim(),
                 });
             } else {
@@ -311,7 +312,7 @@ function getTo(line: string) {
     if (!start || !end || !nextState || !updateSymbol || !direction) {
         throw new Error("Invalid transition function");
     }
-    if (direction != "L" && direction != "R") {
+    if (direction != "L" && direction != "R" && direction != "S") {
         throw new Error("Invalid transition function");
     }
     return { nextState, updateSymbol, direction };
@@ -342,3 +343,5 @@ function countChar(str: string, char: string) {
     }
     return count;
 }
+
+export { tokenize, get };
